@@ -1,0 +1,27 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+use Magezon\Core\Helper\Data as CoreHelper;
+use Magezon\Blog\Block\Post\View;
+
+// phpcs:disable Magento2.Templates.ThisInTemplate.FoundHelper
+
+/** @var View $block */
+/** @var Escaper $escaper */
+
+/** @var CoreHelper $coreHelper */
+$coreHelper = $this->helper(CoreHelper::class);
+
+$post = $block->getCurrentPost();
+?>
+<div class="blog-post-content">
+    <?= /** @noEscape */ $coreHelper->filter($post->getContent()) ?>
+</div>

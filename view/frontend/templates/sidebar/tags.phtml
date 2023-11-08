@@ -1,0 +1,53 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+use Magezon\Blog\Block\Sidebar\Tags;
+use Magezon\Blog\Helper\Data as DataHelper;
+
+// phpcs:disable Magento2.Templates.ThisInTemplate.FoundHelper
+
+/** @var Tags $block */
+/** @var Escaper $escaper */
+
+/** @var DataHelper $dataHelper */
+$dataHelper = $this->helper(DataHelper::class);
+$title = $dataHelper->getConfig('sidebar/tags/title');
+$showPostCount = $dataHelper->getConfig('sidebar/tags/show_post_count');
+$tags = $block->getTags();
+?>
+<?php if (1) { ?>
+    <div class="blog-block blog-tags mb-4">
+        <?php if ($title) { ?>
+            <div class="blog-block-title">
+                <h3 class="title-font sm:text-xl text-lg mb-2 font-bold text-gray-900">
+                    <?= $escaper->escapeHtml($title) ?>
+                </h3>
+            </div>
+        <?php } ?>
+        <div class="blog-block-content card">
+            <?php foreach ($tags as $tag) { ?>
+                <a href="<?= $escaper->escapeHtmlAttr($escaper->escapeUrl($tag->getUrl())) ?>"
+                   class="px-2 py-1 my-1 bg-container-darker hover:bg-primary inline-block hover:text-white inline-block
+                   transition duration-300"
+                >
+                <span>
+                    <?= $escaper->escapeHtml($tag->getTitle()) ?>
+                </span>
+                    <?php if ($showPostCount): ?>
+                        <span>
+                    (<?= (int) $tag->getPostCount() ?>)
+                    </span>
+                    <?php endif; ?>
+                </a>
+            <?php } ?>
+        </div>
+    </div>
+<?php } ?>

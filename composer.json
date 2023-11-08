@@ -1,0 +1,23 @@
+{
+    "name": "magezon/module-hyva-themes-blog",
+    "description": "Hyvä Themes Compatibility module for Blog",
+    "type": "magento2-module",
+    "require": {
+        "magento/framework": "*",
+        "hyva-themes/magento2-compat-module-fallback": "*",
+        "magezon/module-core": "*",
+        "magezon/module-blog": "*"
+    },
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
+    ],
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Hyva\\MagezonBlog\\": ""
+        }
+    }
+}

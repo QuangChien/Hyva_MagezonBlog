@@ -1,0 +1,66 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+
+/* @var $block Magezon\Blog\Block\Post\View */
+/** @var ViewModelRegistry $viewModels */
+
+$dataHelper = $this->helper('\Magezon\Blog\Helper\Data');
+$post = $block->getCurrentPost();
+$navLinkEnable = $dataHelper->getNavLinkEnable();
+$navLinkOption = $dataHelper->getNavLinkOption();
+$navLinkPostsData = $post->getNextAndPrevPost($navLinkOption);
+
+/** @var HeroiconsOutline $heroiconsOutline */
+$heroiconsOutline = $viewModels->require(HeroiconsOutline::class);
+?>
+
+<?php if($navLinkEnable) :?>
+    <div id="post-nav-link" class="post-nav-link mb-4">
+        <?php foreach ($navLinkPostsData as $key => $item) :?>
+            <?php $issetItemData = !$item->isEmpty(); ?>
+            <?php if($key == 'prev' && $issetItemData) :?>
+                <div class="nav-link-item post-prev flex w-1/2 float-left">
+                    <?php if(!empty($item->getImageUrl())) :?>
+                        <div class="post-image-rating post-prev-image-wrap w-1/3 mr-4 overflow-hidden hidden lg:block">
+                            <img src="<?= $block->escapeUrl($item->getImageUrl()) ?>" alt="<?= $block->escapeHtml($item->getTitle() ?? '') ?>">
+                        </div>
+                    <?php endif; ?>
+                    <div class="post-action-rating post-prev-action w-full pr-5 <?= empty($item->getImageUrl()) ? 'not-feature-image' : '' ?>">
+                        <a href="<?= $block->escapeUrl($item->getUrl()) ?>" class="nav-link-action hover:underline text-sm flex items-center text-blue-600 nav-link-action-prev">
+                            <?= $heroiconsOutline->chevronLeftHtml('flex-shrink-0 mb-[1px]', 15, 15) ?>
+                            <span class="inline-block ml-1"><?= $block->escapeHtml(__('Previous article')) ?></span>
+                        </a>
+                        <h4 class="post-nav-link-title my-1 leading-6"><?= $block->escapeHtml($item->getTitle() ?? '' )?></h4>
+                    </div>
+                </div>
+            <?php endif; ?>
+
+            <?php if($key == 'next' && $issetItemData) :?>
+                <div class="nav-link-item post-next flex w-1/2 float-right">
+                    <div class="post-action-rating post-next-action w-full text-right pl-5 <?= empty($item->getImageUrl()) ? 'not-feature-image' : '' ?>">
+                        <a href="<?= $block->escapeUrl($item->getUrl()) ?>" class="nav-link-action hover:underline text-sm flex items-center text-blue-600 justify-end nav-link-action-next">
+                            <span class="inline-block mr-1"><?= $block->escapeHtml(__('Next article')) ?></span>
+                            <?= $heroiconsOutline->chevronRightHtml('flex-shrink-0 mb-[1px]', 15, 15) ?>
+                        </a>
+                        <h4 class="post-nav-link-title my-1 leading-6"><?= $block->escapeHtml($item->getTitle() ?? '' )?></h4>
+                    </div>
+                    <?php if(!empty($item->getImageUrl())) :?>
+                        <div class="post-image-rating post-next-image-wrap w-1/3 ml-4 overflow-hidden hidden lg:block">
+                            <img src="<?= $block->escapeUrl($item->getImageUrl()) ?>" alt="<?= $block->escapeHtml($item->getTitle() ?? '') ?>">
+                        </div>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+        <?php endforeach; ?>
+        <div class="clear-both"></div>
+    </div>
+<?php endif; ?>

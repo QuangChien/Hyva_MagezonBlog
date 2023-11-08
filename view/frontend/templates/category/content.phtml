@@ -1,0 +1,30 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Magezon\Blog\Block\Category\View;
+use Magezon\Core\Helper\Data as CoreHelper;
+
+// phpcs:disable Magento2.Templates.ThisInTemplate.FoundHelper
+
+/* @var $block View */
+
+/** @var CoreHelper $coreHelper */
+$coreHelper = $this->helper(CoreHelper::class);
+
+$category = $block->getCurrentCategory();
+$content = $category->getData('content');
+?>
+<?php if ($content) { ?>
+    <div class="blog-top-section blog-category-description container mt-4 mb-8">
+<!--        <div class="prose">-->
+            <?= /** @noEscape */ $coreHelper->filter($content) ?>
+<!--        </div>-->
+    </div>
+<?php } ?>

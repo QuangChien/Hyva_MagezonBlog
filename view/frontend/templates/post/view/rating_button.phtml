@@ -1,0 +1,222 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+declare(strict_types=1);
+
+/* @var $block Magezon\Blog\Block\Post\View */
+
+$dataHelper = $this->helper('\Magezon\Blog\Helper\Data');
+$post = $block->getCurrentPost();
+$ratingBtnEnable = $dataHelper->getRatingBtnEnable();
+$ratingBtnLikeEnable = $dataHelper->getRatingBtnLikeEnable();
+$ratingBtnDislikeEnable = $dataHelper->getRatingBtnDislikeEnable();
+?>
+
+<?php if($ratingBtnEnable) :?>
+    <div x-data="ratingAction()" id="rating-button" class="text-center mt-3 rating-button <?= $post->getId() ?>">
+        <?php if($ratingBtnEnable && ($ratingBtnLikeEnable || $ratingBtnDislikeEnable)) :?>
+            <p><?= __("Your feelings about the post?") ?></p>
+        <?php endif; ?>
+        <div class="mt-2">
+            <button id="" @click="likeAction" class="bg-[#5288ff] text-white text-sm font-semibold rounded-md py-2 px-4 cursor-pointer border-none outline-none transition
+            duration-300 hover:-translate-y-1 like-review <?= $ratingBtnLikeEnable ? '' : 'hidden' ?>">
+                <svg fill="#fff" class="inline-block mt-[-3px]" width="18px" height="18px" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" >
+                    <path d="M0 0h48v48H0z" fill="none"/>
+                    <g id="Shopicon">
+                        <path d="M8.444,27L24,42l15.556-15c2.7-2.033,4.444-5.256,4.444-8.889C44,11.978,39.022,7,32.889,7
+		                C29.256,7,26.022,8.756,24,11.456C21.978,8.756,18.744,7,15.111,7C8.978,7,4,11.978,4,18.111C4,21.744,5.744,24.967,8.444,27z"/>
+                    </g>
+                </svg>
+                <?= __('Like') ?>
+                <span class="rating-total"><?= $post->getLikeTotal() ?></span>
+            </button>
+            <button id="" @click="dislikeAction" class="bg-[#7d7d7d] text-white text-sm font-semibold rounded-md py-2 px-4 cursor-pointer border-none outline-none transition
+            duration-300 hover:-translate-y-1 dislike-review <?= $ratingBtnDislikeEnable ? '' : 'hidden' ?>">
+                <svg class="inline-block mt-[-3px]" fill="#fff" width="14px" height="14px" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M473.7 73.8l-2.4-2.5c-46-47-118-51.7-169.6-14.8L336 159.9l-96 64 48 128-144-144 96-64-28.6-86.5C159.7 19.6 87 24 40.7 71.4l-2.4 2.4C-10.4 123.6-12.5 202.9 31 256l212.1 218.6c7.1 7.3 18.6 7.3 25.7 0L481 255.9c43.5-53 41.4-132.3-7.3-182.1z"/>
+                </svg>
+                <?= __('Dislike') ?>
+                <span class="rating-total"><?= $post->getDislikeTotal() ?></span>
+            </button>
+        </div>
+        <div class="rating-error bg-red-400 text-white"></div>
+    </div>
+<?php endif; ?>
+<script>
+    let ratingTotalJson = localStorage.getItem('ratingTotal');
+    let ratingTotal = ratingTotalJson ? JSON.parse(ratingTotalJson) : [];
+    let postIdCurrent = <?= $post->getId() ?>;
+    let likeReview = document.querySelectorAll('.like-review');
+    let dislikeReview = document.querySelectorAll('.dislike-review');
+
+    window.addEventListener('beforeunload', function() {
+        document.querySelectorAll('#rating-button button').forEach(function(button) {
+            button.disabled = true;
+        });
+    });
+
+    // load localStorage rating status
+    ratingTotal.forEach(function(item, index) {
+        if(item.postId === postIdCurrent){
+            if(item.liked === 'active'){
+                likeReview.forEach(function(element) {
+                    element.id = 'liked';
+                    element.style.background = '#ed2553';
+                });
+            }
+            if(item.disliked === 'active'){
+                dislikeReview.forEach(function(element) {
+                    element.id = 'disliked';
+                    element.style.background = '#444';
+                });
+            }
+        }
+    });
+
+    function ratingAction() {
+        return {
+            likeAction(event) {
+                document.querySelectorAll('#rating-button button').forEach(function(button) {
+                    button.disabled = true;
+                });
+                let data = {
+                    postId: postIdCurrent,
+                    isDisliked: event.target.nextElementSibling.id ? 'true' : 'false',
+                    isLiked: event.target.id ? 1 : 0,
+                    isLikeClick: 1,
+                    form_key: hyva.getFormKey(),
+                    uenc: btoa(window.location.href)
+                }
+                this.updateRatingAjax(data);
+            },
+
+            dislikeAction(event) {
+                document.querySelectorAll('#rating-button button').forEach(function(button) {
+                    button.disabled = true;
+                });
+                let data = {
+                    postId: postIdCurrent,
+                    isLiked: event.target.previousElementSibling.id ? 'true' : 'false',
+                    isDisliked: event.target.id ? 1 : 0,
+                    isDislikeClick: 1,
+                    form_key: hyva.getFormKey(),
+                    uenc: btoa(window.location.href)
+                }
+                this.updateRatingAjax(data);
+            },
+
+            async updateRatingAjax(data) {
+                const postUrl = `${BASE_URL}blog/post/updaterating`;
+
+                await fetch(postUrl, {
+                    headers: {
+                        contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                    },
+                    body: new URLSearchParams(data),
+                    method: "POST",
+                    mode: "cors",
+                    credentials: "include"
+                })
+                .then(async response => {
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                    } else if (response.ok) {
+                        return await response.json();
+                    }
+                })
+                .then(response => {
+                    if (!response) {
+                        return;
+                    }
+
+                    let postExists = ratingTotal.find(item => item.postId === data.postId);
+
+                    if (postExists) {
+                        //update rating status into localStorage
+                        ratingTotal.forEach(function(item, index) {
+                            if(item.postId === data.postId){
+                                ratingTotal[index] = {
+                                    'postId': data.postId,
+                                    'liked': response.data.isLiked === '0' ? 'active'  : 'not',
+                                    'disliked': response.data.isDisliked === '0' ? 'active'  : 'not',
+                                }
+                            }
+                        });
+                    } else {
+                        ratingTotal.push({
+                            'postId': data.postId,
+                            'liked': response.data.isLiked === '0' ? 'active'  : 'not',
+                            'disliked': response.data.isDisliked === '0' ? 'active'  : 'not',
+                        })
+                    }
+
+                    let ratingTotalString = JSON.stringify(ratingTotal);
+                    localStorage.setItem('ratingTotal', ratingTotalString);
+
+                    if(response.data.isLikeClick){
+                        if(response.data.isLiked === '0') {
+                            likeReview.forEach(function(element) {
+                                element.id = 'liked';
+                                element.style.background = '#ed2553';
+                                element.querySelector('.rating-total').innerHTML = response.data.likeTotal;
+                            });
+
+                            if(Boolean(response.data.isDisliked)) {
+                                dislikeReview.forEach(function(element) {
+                                    element.id = '';
+                                    element.style.background = '#7d7d7d';
+                                    element.querySelector('.rating-total').innerHTML = response.data.disLikeTotal;
+                                });
+                            }
+                        }else{
+                            likeReview.forEach(function(element) {
+                                element.id = '';
+                                element.style.background = '#5288ff';
+                                element.querySelector('.rating-total').innerHTML = response.data.likeTotal;
+                                this.liked = false;
+                            });
+                        }
+                    }
+
+                    if(response.data.isDislikeClick){
+                        if(response.data.isDisliked === '0') {
+                            dislikeReview.forEach(function(element) {
+                                element.id = 'disliked';
+                                element.style.background = '#444';
+                                element.querySelector('.rating-total').innerHTML = response.data.disLikeTotal;
+                            });
+                            if(Boolean(response.data.isLiked)) {
+                                likeReview.forEach(function(element) {
+                                    element.id = '';
+                                    element.style.background = '#5288ff';
+                                    element.querySelector('.rating-total').innerHTML = response.data.likeTotal;
+                                });
+                            }
+                        }else{
+                            dislikeReview.forEach(function(element) {
+                                element.id = '';
+                                element.style.background = '#7d7d7d';
+                                element.querySelector('.rating-total').innerHTML = response.data.disLikeTotal;
+                            });
+                        }
+                    }
+                })
+                .catch(error => {
+                    document.querySelector('.rating-error').innerHTML = 'An error occurred. Please try again !';
+                    setTimeout(function() {
+                        document.querySelector('.rating-error').innerHTML = '';
+                    }, 2000);
+                })
+                .finally(() => {
+                    document.querySelectorAll('#rating-button button').forEach(function(button) {
+                        button.disabled = false;
+                    });
+                });
+            }
+        }
+    }
+</script>

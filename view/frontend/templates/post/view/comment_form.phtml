@@ -1,0 +1,212 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Magento\Contact\Helper\Data as ContactHelper;
+use Magento\Framework\Escaper;
+use Magezon\Blog\Block\Post\CommentForm;
+use Magezon\Blog\Helper\Data as DataHelper;
+use Magezon\Blog\Model\Comment;
+use Hyva\Theme\ViewModel\ReCaptcha;
+use Hyva\Theme\Model\ViewModelRegistry;
+
+// phpcs:disable Magento2.Templates.ThisInTemplate.FoundHelper
+// phpcs:disable Magento2.Files.LineLength, Generic.Files.LineLength
+
+/** @var CommentForm $block */
+/** @var Escaper $escaper */
+
+/** @var DataHelper $dataHelper */
+$dataHelper = $this->helper(DataHelper::class);
+/** @var ContactHelper $contactHelper */
+$contactHelper = $this->helper(ContactHelper::class);
+
+/** @var ViewModelRegistry $viewModels */
+$recaptcha = $viewModels->require(ReCaptcha::class);
+
+$type = $dataHelper->getCommentType();
+$post = $block->getCurrentPost();
+$publicKey = $dataHelper->getConfig('post_page/comments/recaptcha/public_key');
+$gdprStatus = $dataHelper->getGdprStatus();
+$gdprPathLink = $dataHelper->getGdprPathLink();
+
+?>
+<?php if ($post->getAllowComment()) { ?>
+    <?php if ($block->getAllowPostCommentFlag()) { ?>
+        <?php if ($type == Comment::TYPE_NATIVE) { ?>
+            <?php
+                $authorName = $block->getPostValue('author') ?: $contactHelper->getUserName();
+                $authorEmail = $block->getPostValue('author_email') ?: $contactHelper->getUserEmail();
+            ?>
+            <div class="reply-comment-placeholder" data-post-id="0"></div>
+            <div id="respond"
+                 class="blog-block blog-comment-form my-4"
+                 x-data="initBlogCommentForm()"
+                 @reply-to-comment.window="moveComment($event.detail.id)"
+            >
+                <div class="blog-block-title">
+                    <h3 class="title-font sm:text-xl text-lg mb-4 font-medium text-gray-900 relative font-bold">
+                        <?= $escaper->escapeHtml(__('Leave a Reply')) ?>
+                    </h3>
+                </div>
+                <div class="blog-block-content card">
+                    <form class="form"
+                          action="<?= $escaper->escapeUrl($block->getUrl('blog/comment/post')) ?>"
+                          method="post"
+                          x-data="{...hyva.formValidation($el), ...validateForm()}"
+                          @submit.prevent="onSubmit"
+                    >
+                        <?= $block->getBlockHtml('formkey') ?>
+                        <fieldset class="fieldset">
+                            <div class="field note no-label mb-2">
+                                <?= $escaper
+                                    ->escapeHtml(
+                                        __('Your email address will not be published. Required fields are marked')
+                                    )
+                                ?>
+                                <span class="blog-required">*</span>
+                            </div>
+                            <div class="field comment required">
+                                <label class="label font-bold" for="ccontent">
+                                    <?= $escaper->escapeHtml(__('Comment')) ?>
+                                    <span class="blog-required">*</span>
+                                </label>
+                                <div class="control">
+                                    <textarea name="content"
+                                              id="ccontent"
+                                              class="input-text form-textarea w-full"
+                                              cols="45"
+                                              rows="8"
+                                              required
+                                    ><?= $escaper->escapeHtml($block->getPostValue('content')) ?></textarea>
+                                </div>
+                            </div>
+                            <div class="comment-information mb-3 flex justify-center">
+                                <div class="field name required w-1/2">
+                                    <label class="label" for="cname">
+                                        <?= $block->escapeHtml(__('Name')) ?>
+                                        <span class="blog-required">*</span>
+                                    </label>
+                                    <div class="control">
+                                        <input name="author"
+                                               id="cname"
+                                               title="<?= $escaper->escapeHtmlAttr(__('Name')) ?>"
+                                               value="<?= $escaper->escapeHtmlAttr($authorName) ?>"
+                                               class="input-text w-98 border-inherit"
+                                               type="text"
+                                               data-validate='{"required": true}'
+                                               @change="onChange"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div class="field email required w-1/2">
+                                    <label class="label" for="cemail">
+                                        <?= $escaper->escapeHtml(__('Email')) ?>
+                                        <span class="blog-required">*</span>
+                                    </label>
+                                    <div class="control">
+                                        <input name="author_email"
+                                               id="cemail"
+                                               title="<?= $escaper->escapeHtmlAttr(__('Email')) ?>"
+                                               value="<?= $escaper->escapeHtmlAttr($authorEmail) ?>"
+                                               class="input-text w-98 border-inherit"
+                                               type="email"
+                                               data-validate='{"required": true, "email": true}'
+                                               @change="onChange"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <?php if($gdprStatus && $gdprPathLink):?>
+                                <div class="field email required">
+                                    <div class="control">
+                                        <input data-validate='{"required": true}' @change="onChange" class="mr-2" type="checkbox" value="1" name="custom_checkbox">
+                                    </div>
+                                    <span id="agree"><?= __('I agree to the <a target="_blank" class="hover:underline text-orange-500" href="%1">Privacy Policy</a>', $gdprPathLink) ?></span>
+                                </div>
+                            <?php endif; ?>
+                            <div class="w-full">
+                                <?= $recaptcha->getInputHtml("blog_comment_form") ?>
+                            </div>
+                        </fieldset>
+                        <input type="hidden" name="post_id" value="<?= (int) $post->getId() ?>"/>
+                        <input type="hidden" name="parent_id" :value="replyId"/>
+                        <div class="actions-toolbar">
+                            <div class="btn btn-primary">
+                                <button type="submit" title="<?= $escaper->escapeHtmlAttr(__('Submit')) ?>"
+                                        class="action submit primary">
+                                    <?= $escaper->escapeHtml(__('Submit')) ?>
+                                </button>
+                            </div>
+                            <template x-if="replyId">
+                                <div class="secondary">
+                                    <a @click.prevent="$dispatch('reply-to-comment',{id: 0 })"
+                                       href=""
+                                       class="cancel-comment-reply-link btn btn-secondary mr-auto"
+                                    >
+                                        <?= $escaper->escapeHtml(__('Cancel')) ?>
+                                    </a>
+                                </div>
+                            </template>
+                        </div>
+                    </form>
+                </div>
+            </div>
+                <script>
+                    function initBlogCommentForm() {
+                        return {
+                            replyId: 0,
+                            moveComment(id) {
+                                this.replyId = id;
+                                document.querySelector('.reply-comment-placeholder[data-post-id="' + id + '"]').appendChild(this.$el);
+                            }
+                        }
+                    }
+
+                    function validateForm() {
+                        return {
+                            onSubmit(event) {
+                                event.preventDefault();
+
+                                this.validate()
+                                .then(() => {
+                                    $form = event.target;
+                                    <?= $recaptcha ? $recaptcha->getValidationJsHtml('blog_comment_form') : '' ?>
+                                    if (this.errors === 0) {
+                                        $form.submit()
+                                    }
+                                })
+                                .catch((invalid) => {
+                                    if (invalid.length > 0) {
+                                        invalid[0].focus();
+                                    }
+                                });
+                            }
+                        }
+                    }
+                </script>
+        <?php } ?>
+    <?php } else { ?>
+        <div class="message info notlogged card my-4">
+            <div class="prose">
+                <?= $escaper
+                    ->escapeHtml(
+                        __(
+                            'Only registered users can post comments. Please <a href="%1">Sign in</a> or <a href="%2">create an account</a>',
+                            $block->getUrl('customer/account/'),
+                            $block->getUrl('customer/account/create')
+                        ),
+                        ['a']
+                    )
+                ?>
+            </div>
+        </div>
+    <?php } ?>
+<?php } ?>

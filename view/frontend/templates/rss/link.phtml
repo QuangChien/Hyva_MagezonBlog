@@ -1,0 +1,40 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HeroiconsSolid;
+use Magento\Framework\Escaper;
+use Magezon\Blog\Block\Rss\Link as RssLink;
+use Magezon\Blog\Block\Rss\Link\LatestPosts;
+use Magezon\Blog\Helper\Data as DataHelper;
+
+// phpcs:disable Magento2.Templates.ThisInTemplate.FoundHelper
+
+/** @var RssLink\Category|LatestPosts $block */
+/** @var ViewModelRegistry $viewModels */
+/** @var Escaper $escaper */
+
+/** @var HeroiconsSolid $heroiconsSolid */
+$heroiconsSolid = $viewModels->require(HeroiconsSolid::class);
+
+/** @var DataHelper $dataHelper */
+$dataHelper = $this->helper(DataHelper::class);
+$text = $dataHelper->getConfig('rss/text');
+?>
+<?php if ($text): ?>
+    <a href="<?= $escaper->escapeHtmlAttr($escaper->escapeUrl($block->getLink())) ?>"
+       class="action link rss ml-auto underline flex items-center my-4 md:my-0"
+    >
+        <?= $heroiconsSolid->rssHtml('w-6 h-6', 25, 25) ?>
+        <span class="ml-2">
+            <?= /** @noEscape */ $text ?>
+        </span>
+    </a>
+<?php endif; ?>

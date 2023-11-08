@@ -1,0 +1,67 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+use Magezon\Blog\Block\Sidebar\RecentComments;
+use Magezon\Blog\Helper\Data as DataHelper;
+use Magezon\Blog\Model\Comment;
+
+// phpcs:disable Magento2.Templates.ThisInTemplate.FoundHelper
+// phpcs:disable Magento2.Files.LineLength, Generic.Files.LineLength
+
+/** @var RecentComments $block */
+/** @var Escaper $escaper */
+
+/** @var DataHelper $dataHelper */
+$dataHelper = $this->helper(DataHelper::class);
+$commentType = $dataHelper->getCommentType();
+
+if ($commentType !== Comment::TYPE_NATIVE) {
+    return '';
+}
+$comments = $block->getCollection();
+?>
+<?php if ($comments->count()) { ?>
+    <div class="blog-recentcomments">
+        <?php /** @var Comment $comment */ ?>
+        <?php foreach ($comments as $comment): ?>
+            <?php
+            $avatarSize = 65;
+            $authorEmail = $comment->getAuthorEmail();
+            $gravatarUrl = "https://www.gravatar.com/avatar/" . md5(strtolower(trim($authorEmail))) . "?d=identicon&s=" . $avatarSize;
+            $post = $comment->getPost()
+            ?>
+            <div id="comment-<?= (int) $comment->getId() ?>" class="mt-2 mb-4">
+                <div class="flex">
+                    <div class="flex-shrink-0 mr-3">
+                        <img class="mt-2 rounded-full w-8 h-8 sm:w-10 sm:h-10"
+                             src="<?= $escaper->escapeHtmlAttr($escaper->escapeUrl($gravatarUrl)) ?>"
+                             alt="<?= $escaper->escapeHtmlAttr($comment->getAuthor()) ?> Avatar"
+                             loading="lazy"
+                        />
+                    </div>
+                    <div class="flex-1 border rounded-lg px-4 py-2 sm:px-6 sm:py-4 leading-relaxed">
+                        <strong>
+                            <?= $escaper->escapeHtml($comment->getAuthor()) ?>
+                        </strong>
+                        <a href="<?= $escaper->escapeHtmlAttr($escaper->escapeUrl($post->getUrl())) ?>#comment-<?= (int) $comment->getId() ?>"
+                           class="text-xs text-gray-400"
+                        >
+                            <?= $escaper->escapeHtml($comment->getCreatedAtFormatted()) ?>
+                        </a>
+                        <p class="text-sm">
+                            <?= /** @noEscape */ $block->getCommentContent($comment) ?>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+<?php } ?>

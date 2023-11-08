@@ -1,0 +1,92 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+use Magezon\Blog\Block\Post\Comments;
+use Magezon\Blog\Helper\Data as DataHelper;
+use Magezon\Blog\Model\Comment;
+
+// phpcs:disable Magento2.Templates.ThisInTemplate.FoundHelper
+
+/* @var $block Comments */
+/* @var $escaper Escaper */
+
+/** @var DataHelper $dataHelper */
+$dataHelper = $this->helper(DataHelper::class);
+
+$type = $dataHelper->getCommentType();
+$post = $block->getCurrentPost();
+$comments = $block->getComments();
+$total = count($comments);
+$numberOfComments = $dataHelper->getConfig('post_page/comments/number_of_comments');
+?>
+<?php if ($post->getAllowComment()) { ?>
+    <?php if ($type == Comment::TYPE_NATIVE) { ?>
+        <?php if ($total) { ?>
+            <div id="blog-post-comments" class="blog-block blog-commentlist my-4">
+                <div class="blog-block-title">
+                    <h3 class="title-font sm:text-xl text-lg mb-4 font-medium text-gray-900">
+                        <?= $escaper->escapeHtml(__('%1 comments', $total)) ?>
+                    </h3>
+                </div>
+                <div class="blog-block-content card">
+                    <?php if ($comments = $block->getComments()): ?>
+                        <?= $block->getCommentsHtml() ?>
+                    <?php endif; ?>
+                    <?= $block->getPagerHtml() ?>
+                </div>
+            </div>
+        <?php } ?>
+    <?php } ?>
+    <?php if ($type == Comment::TYPE_FACEBOOK) { ?>
+        <?php
+            $lang = $dataHelper->getCurrentLang();
+            $facebookConnectUrl = 'https://connect.facebook.net/' . $lang . '/sdk.js#xfbml=1&version=v11.0';
+        ?>
+        <div>
+            <div class="fb-comment"
+                 data-lazy="true"
+                 data-href="<?= $escaper->escapeUrl($post->getUrl()) ?>"
+                 data-include-parent="true"
+                 data-numposts="<?= (int) $numberOfComments ?>"
+            ></div>
+            <div id="fb-root"></div>
+            <script async defer
+                    crossorigin="anonymous"
+                    src="<?= $escaper->escapeUrl($facebookConnectUrl) ?>"
+                    nonce="i4rwSS5y"
+            ></script>
+        </div>
+    <?php } ?>
+    <?php if ($type == Comment::TYPE_DISQUS) { ?>
+        <?php
+            $disqusShortname = $dataHelper->getConfig('post_page/comments/disqus_shortname') ?: 'blog-m2-magezon-com';
+            $disqusBaseUrl = 'https://'. $disqusShortname . '.disqus.com/';
+        ?>
+        <div id="disqus_thread"></div>
+        <script id="dsq-count-scr"
+                src="<?= $escaper->escapeUrl($disqusBaseUrl) ?>count.js"
+                async
+        ></script>
+        <script>
+            var disqus_config = function () {
+                this.page.url = '<?= $escaper->escapeJs($escaper->escapeUrl($post->getUrl())) ?>';
+                this.page.identifier = '<?= $escaper->escapeJs($post->getIdentifier()) ?>';
+            };
+            (function () {
+                var d = document, s = d.createElement('script');
+                s.src = '<?= $escaper->escapeUrl($disqusBaseUrl) ?>embed.js';
+                s.async = true
+                s.setAttribute('data-timestamp', +new Date());
+                (d.head || d.body).appendChild(s);
+            })();
+        </script>
+    <?php } ?>
+<?php } ?>

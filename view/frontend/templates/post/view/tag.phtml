@@ -1,0 +1,44 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+use Magezon\Blog\Block\Post\View;
+use Magezon\Blog\Helper\Data as DataHelper;
+
+// phpcs:disable Magento2.Templates.ThisInTemplate.FoundHelper
+
+/** @var View $block */
+/** @var Escaper $escaper */
+
+/** @var DataHelper $dataHelper */
+$dataHelper = $this->helper(DataHelper::class);
+?>
+<?php if ($dataHelper->enableTagPage()) { ?>
+    <?php
+        $post = $block->getCurrentPost();
+        $collection = $post->getTagCollection();
+        $count = $collection->count();
+    ?>
+    <?php if ($count) { ?>
+        <div class="blog-post-tag my-4">
+            <span class="font-semibold">
+                <?= $escaper->escapeHtml(__('Tags')) ?>:
+            </span>
+            <?php foreach ($collection as $tag) { ?>
+                <a href="<?= $escaper->escapeHtmlAttr($escaper->escapeUrl($tag->getUrl())) ?>"
+                   rel="tag"
+                   class="px-2 py-1 my-1 bg-gray-200 hover:bg-primary hover:text-white inline-block transition duration-300"
+                >
+                    <?= $escaper->escapeHtml($tag->getTitle()) ?>
+                </a>
+            <?php } ?>
+        </div>
+    <?php } ?>
+<?php } ?>

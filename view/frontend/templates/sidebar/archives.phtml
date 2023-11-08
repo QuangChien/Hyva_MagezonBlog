@@ -1,0 +1,73 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+use Magezon\Blog\Block\Sidebar\Archives;
+use Magezon\Blog\Helper\Data as DataHelper;
+
+// phpcs:disable Magento2.Templates.ThisInTemplate.FoundHelper
+
+/** @var Archives $block */
+/** @var Escaper $escaper */
+
+/** @var DataHelper $dataHelper */
+$dataHelper = $this->helper(DataHelper::class);
+
+$title = $dataHelper->getConfig('sidebar/archives/title');
+$showProductCount = $dataHelper->getConfig('sidebar/archives/show_post_count');
+$archives = $block->getArchives();
+?>
+<?php if ($archives): ?>
+    <script>
+        function initBlogArchives() {
+            return {
+                init() {
+                    Array.from(this.$el.querySelectorAll('a')).filter(link => {
+                        return link.href === window.location.href.split('?')[0];
+                    }).map(item => {
+                        item.classList.add('underline');
+                    });
+                }
+            }
+        }
+    </script>
+    <div class="blog-block blog-archives mb-6"
+         x-data="initBlogArchives()"
+         x-init="init()"
+    >
+        <?php if ($title) { ?>
+            <div class="blog-block-title">
+                <h3 class="title-font sm:text-xl text-lg mb-2 font-bold text-gray-900">
+                    <?= $escaper->escapeHtml($title) ?>
+                </h3>
+            </div>
+        <?php } ?>
+        <div class="blog-block-content card">
+            <ul>
+                <?php foreach ($archives as $year) { ?>
+                    <?php foreach ($year as $archive) { ?>
+                        <li class="leading-loose">
+                            <a href="<?= $escaper->escapeHtmlAttr($escaper->escapeUrl($archive['url'])) ?>"
+                               class="hover:underline"
+                            >
+                                <span>
+                                    <?= $escaper->escapeHtml($archive['label']) ?>
+                                </span>
+                                <?php if ($showProductCount) { ?>
+                                    <span>(<?= (int) $archive['count'] ?>)</span>
+                                <?php } ?>
+                            </a>
+                        </li>
+                    <?php } ?>
+                <?php } ?>
+            </ul>
+        </div>
+    </div>
+<?php endif; ?>

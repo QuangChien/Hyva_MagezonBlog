@@ -1,0 +1,33 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+use Magezon\Blog\Block\Post\View;
+
+/** @var View $block */
+/** @var Escaper $escaper */
+
+$post        = $block->getCurrentPost();
+$type        = $post->getOgType() ? $post->getOgType() : 'article';
+$title       = $post->getOgTitle()
+    ? $post->getOgTitle()
+    : (
+        $post->getMetaTitle()
+            ? $post->getMetaTitle()
+            : $post->getTitle()
+    );
+$image       = $post->getOgImageUrl();
+$description = $post->getOgDescription() ? $post->getOgDescription() : $post->getPostExcerpt();
+?>
+<meta property="og:type" content="<?= $escaper->escapeHtmlAttr($type) ?>" />
+<meta property="og:title" content="<?= $escaper->escapeHtmlAttr($block->stripTags($title)) ?>" />
+<meta property="og:image" content="<?= $escaper->escapeUrl($image) ?>" />
+<meta property="og:description" content="<?= $escaper->escapeHtmlAttr($block->stripTags($description)) ?>" />
+<meta property="og:url" content="<?= $escaper->escapeUrl($post->getUrl()) ?>" />

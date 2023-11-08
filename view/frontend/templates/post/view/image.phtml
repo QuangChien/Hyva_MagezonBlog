@@ -1,0 +1,52 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+use Magezon\Blog\Block\Post\View;
+use Magezon\Blog\Helper\Data as DataHelper;
+
+// phpcs:disable Magento2.Templates.ThisInTemplate.FoundHelper
+
+/** @var View $block */
+/** @var Escaper $escaper */
+
+/** @var DataHelper $dataHelper */
+$dataHelper = $this->helper(DataHelper::class);
+
+$post = $block->getCurrentPost();
+$imageUrl = $post->getImageUrl();
+$type = $post->getType();
+// Ideally the relace would be done in the block, but we don't want to
+// override/extend the block for such a small change
+$link = str_replace('youtube.com', 'youtube-nocookie.com', $block->getVideoLink() ?? '');
+?>
+<?php if ($dataHelper->getConfig('post_page/featured_box')) { ?>
+    <div class="blog-post-top relative -m-4 mb-8"
+         <?php if ($type == 'video'): ?>style="padding-bottom: 56.25%" <?php endif; ?>>
+        <?php if ($type == 'video' && $link) { ?>
+            <iframe
+                title="<?= $escaper->escapeHtmlAttr(__('Featured Video')) ?>"
+                width="1110" height="624"
+                src="<?= $escaper->escapeHtmlAttr($escaper->escapeUrl($link)) ?>"
+                class="absolute w-full h-full inset-0 border-0"
+                allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
+                loading="lazy"
+            ></iframe>
+        <?php } else { ?>
+            <?php if ($imageUrl) { ?>
+                <div class="blog-post-image">
+                    <img src="<?= $escaper->escapeHtmlAttr($escaper->escapeUrl($imageUrl)) ?>"
+                         alt="<?= $escaper->escapeHtml($post->getTitle()) ?>"
+                    />
+                </div>
+            <?php } ?>
+        <?php } ?>
+    </div>
+<?php } ?>

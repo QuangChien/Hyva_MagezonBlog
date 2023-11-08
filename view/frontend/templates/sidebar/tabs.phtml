@@ -1,0 +1,73 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+use Magezon\Blog\Block\Sidebar\Tabs;
+use Magezon\Blog\Helper\Data as DataHelper;
+
+// phpcs:disable Magento2.Templates.ThisInTemplate.FoundHelper
+// phpcs:disable Magento2.Files.LineLength, Generic.Files.LineLength
+
+/** @var Tabs $block */
+/** @var Escaper $escaper */
+
+/** @var DataHelper $dataHelper */
+$dataHelper = $this->helper(DataHelper::class);
+$layout = $block->getLayout();
+$name = $block->getNameInLayout();
+$childBlocks = $layout->getChildNames($name);
+?>
+<?php if ($childBlocks) { ?>
+    <div class="blog-tabs my-8 <?php if ($dataHelper->getConfig('sidebar/tabs/sticky')) { ?>sticky top-2<?php } ?>">
+        <div class="flex flex-wrap justify-between"
+             x-data="{ active: false, selectFirstTabOnInit(){ this.active = this.$el.querySelector('.data.switch').dataset['id'] } }"
+             x-init="selectFirstTabOnInit()"
+        >
+            <?php foreach ($layout->getChildNames($name) as $key => $child) { ?>
+                <?php
+                if (!$dataHelper->getConfig('sidebar/tabs/' . $child . '/enabled')) {
+                    continue;
+                }
+                $_block = $block->getChildBlock($child);
+                $label = $dataHelper->getConfig('sidebar/tabs/' . $child . '/title') ? $dataHelper->getConfig('sidebar/tabs/' . $child . '/title') : $_block->getData('title');
+                $html = $_block->toHtml();
+                ?>
+                <?php if (!$html) {
+                    continue;
+                } ?>
+                <div class="w-1/3 blog-tab-item order-1 z-10 border border-container-darker hover:bg-container-lighter text-center"
+                     :class="{ 'bg-container-lighter border-b-0': active === '<?= $escaper->escapeHtmlAttr($child) ?>', 'bg-container-darker': active !== '<?= $escaper->escapeHtmlAttr($child) ?>' }"
+                     data-role="collapsible"
+                     id="tab-label-<?= $escaper->escapeHtmlAttr($child) ?>"
+                >
+                    <a class="data switch py-2 px-4 block"
+                       @click.prevent="active='<?= $escaper->escapeHtmlAttr($child) ?>'"
+                       tabindex="-1"
+                       data-id="<?= $escaper->escapeHtmlAttr($child) ?>"
+                       href="#<?= $escaper->escapeHtmlAttr($child) ?>"
+                       id="tab-label-<?= $escaper->escapeHtmlAttr($child) ?>-title"
+                    >
+                        <?= $escaper->escapeHtml($label) ?>
+                    </a>
+                </div>
+                <div
+                    class="blog-tab-content order-2 w-full px-4 bg-container-lighter border py-4 border-container-darker"
+                    style="margin-top:-1px"
+                    aria-labelledby="tab-label-<?= $escaper->escapeHtmlAttr($child) ?>-title"
+                    id="<?= $escaper->escapeHtmlAttr($child) ?>" data-role="content"
+                    x-show="active === '<?= $escaper->escapeHtmlAttr($child) ?>'"
+                    x-cloak
+                >
+                    <?= /** @noEscape */ $html ?>
+                </div>
+            <?php } ?>
+        </div>
+    </div>
+<?php } ?>

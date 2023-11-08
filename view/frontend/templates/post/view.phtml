@@ -1,0 +1,33 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\MagezonBlog\ViewModel\BlogFullPageCacheTags;
+use Hyva\Theme\Model\ViewModelRegistry;
+use Magezon\Blog\Block\Post\View;
+
+/** @var View $block */
+/** @var ViewModelRegistry $viewModels */
+/** @var BlogFullPageCacheTags $cacheTags */
+
+if ($post = $block->getCurrentPost()) {
+    $cacheTags = $viewModels->require(BlogFullPageCacheTags::class);
+    $cacheTags->register($post);
+}
+
+?>
+<div class="blog-post-view">
+    <div class="blog-post-inner card">
+        <?= $block->getChildHtml('post_top') ?>
+        <div class="blog-post-content-wrapper">
+            <?= $block->getChildHtml('post_content') ?>
+        </div>
+    </div>
+    <?= $block->getChildHtml('post_bottom') ?>
+</div>

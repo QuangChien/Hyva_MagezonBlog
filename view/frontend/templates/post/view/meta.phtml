@@ -1,0 +1,118 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+use Magento\Framework\Escaper;
+use Magezon\Blog\Block\Post\View;
+use Magezon\Blog\Helper\Data as DataHelper;
+use Magezon\Blog\Model\Comment;
+use Magezon\Core\Helper\Data as CoreHelper;
+
+// phpcs:disable Magento2.Templates.ThisInTemplate.FoundHelper
+
+/** @var View $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+
+/** @var CoreHelper $coreHelper */
+$coreHelper = $this->helper(CoreHelper::class);
+/** @var DataHelper $dataHelper */
+$dataHelper = $this->helper(DataHelper::class);
+
+/** @var HeroiconsOutline $heroiconsOutline */
+$heroiconsOutline = $viewModels->require(HeroiconsOutline::class);
+
+$uid = 'blog-' . time() . uniqid();
+$commentType = $dataHelper->getCommentType();
+$post         = $block->getCurrentPost();
+$author       = $post->getAuthor();
+
+$showPostMeta = $dataHelper->getConfig('post_page/post_meta/enabled');
+$showAuthor   = $dataHelper->getConfig('post_page/post_meta/post_author');
+$showDate     = $dataHelper->getConfig('post_page/post_meta/post_date');
+$showCategory = $dataHelper->getConfig('post_page/post_meta/post_cats');
+$showComment  = $dataHelper->getConfig('post_page/post_meta/post_comments');
+$showView     = $dataHelper->getConfig('post_page/post_meta/post_views');
+$showReadTime = $dataHelper->getConfig('post_page/post_meta/post_read_time');
+?>
+<?php if ($showPostMeta && ($showAuthor || $showDate || $showCategory || $showComment)) { ?>
+<div class="blog-post-meta mt-1 mb-4">
+    <?php if ($showAuthor && $author) { ?>
+        <span class="blog-post-meta-author inline-flex items-center text-gray-700 mr-4 gap-x-1 text-sm">
+            <?= $heroiconsOutline->userCircleHtml('', 18, 18) ?>
+            <?php if ($author->getUrl()) { ?>
+            <a
+                href="<?= $escaper->escapeHtmlAttr($escaper->escapeUrl($author->getUrl())) ?>"
+                title="<?= $escaper->escapeHtmlAttr($author->getPublicName()) ?>"
+                class="hover:underline"
+            >
+            <?php } ?>
+            <?= $escaper->escapeHtml($author->getPublicName()) ?>
+            <?php if ($author->getUrl()) { ?>
+            </a>
+            <?php } ?>
+        </span>
+    <?php } ?>
+    <?php if ($showDate) { ?>
+        <span class="blog-post-meta-date inline-flex items-center text-gray-700 mr-4 gap-x-1 text-sm">
+            <?= $heroiconsOutline->clockHtml('', 18, 18) ?>
+            <?= $escaper->escapeHtml($post->getCreatedAtFormatted(true)) ?>
+        </span>
+    <?php } ?>
+    <?php if ($showCategory) { ?>
+        <?php $categories = $post->getCategoryList() ?>
+        <?php if ($categories) { ?>
+            <span class="blog-post-meta-cats inline-flex items-center text-gray-700 mr-4 gap-x-1 text-sm">
+                <?= $heroiconsOutline->folderHtml('', 18, 18) ?>
+                <span>
+                    <?php foreach ($categories as $key => $category) { ?>
+                    <a href="<?= $escaper->escapeHtmlAttr($escaper->escapeUrl($category->getUrl())) ?>"
+                       data-id="<?= $escaper->escapeHtmlAttr($key) ?>"
+                       class="hover:underline inline-block"
+                    >
+                        <?= $escaper->escapeHtml($category->getTitle()) ?>
+                        </a><?= (isset($categories[$key + 1]) && $categories[$key + 1]) ? ', ' : '' ?>
+                    <?php } ?>
+                </span>
+            </span>
+        <?php } ?>
+    <?php } ?>
+    <?php if ($showView) { ?>
+        <span class="blog-post-meta-views inline-flex items-center text-gray-700 mr-4 gap-x-1 text-sm">
+            <?= $heroiconsOutline->eyeHtml('', 18, 18) ?>
+            <?= (int) $post->getTotalViews() ?>
+        </span>
+    <?php } ?>
+    <?php if ($showComment && $post->getAllowComment() && ($commentType !== Comment::TYPE_FACEBOOK)) { ?>
+        <?php $totalCommentCount = (int) $post->getTotalComments(); ?>
+        <span class="blog-post-meta-comments inline-flex items-center text-gray-700 mr-4 gap-x-1 text-sm">
+            <?= $heroiconsOutline->renderHtml('chat-alt-2', '', 18, 18) ?>
+            <a href="<?= $escaper->escapeUrl($post->getMetaCommentUrl()) ?>"
+               class="hover:underline"
+            >
+                <?php if ($totalCommentCount > 1): ?>
+                    <?= $escaper->escapeHtml(__('%1 Comments', $totalCommentCount)); ?>
+                <?php elseif ($totalCommentCount === 1): ?>
+                    <?= $escaper->escapeHtml(__('1 Comment')); ?>
+                <?php else: ?>
+                    <?= $escaper->escapeHtml(__('Leave a comment')); ?>
+                <?php endif; ?>
+            </a>
+        </span>
+    <?php } ?>
+
+    <?php if ($showReadTime && !empty($post->getReadTime())) { ?>
+        <span class="blog-post-meta-read-time inline-flex items-center text-gray-700 mr-4 gap-x-1 text-sm">
+            <?= $heroiconsOutline->bookOpenHtml('', 18, 18) ?>
+            <?= $block->escapeHtml($post->getReadTime()) ?> <?= __('Min read') ?></span>
+    <?php } ?>
+</div>
+<?php } ?>

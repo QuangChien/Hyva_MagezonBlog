@@ -1,0 +1,21 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+use Magezon\Blog\Block\Post\View;
+
+/** @var View $block */
+/** @var Escaper $escaper */
+
+$post = $block->getCurrentPost();
+?>
+<h1 class="blog-post-title page-title text-gray-900 text-3xl title-font font-medium">
+    <?= $escaper->escapeHtml($post->getTitle()) ?>
+</h1>

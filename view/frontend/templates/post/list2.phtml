@@ -1,0 +1,150 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\MagezonBlog\ViewModel\BlogFullPageCacheTags;
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+use Magento\Framework\Escaper;
+use Magezon\Blog\Api\Data\PostInterface;
+use Magezon\Blog\Block\ListPost;
+use Magezon\Blog\Helper\Data as DataHelper;
+use Magezon\Blog\Model\Comment;
+use Magezon\Core\Helper\Data as CoreHelper;
+
+// phpcs:disable Magento2.Templates.ThisInTemplate.FoundHelper
+// phpcs:disable Magento2.Files.LineLength, Generic.Files.LineLength
+
+/** @var ListPost $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+
+/** @var CoreHelper $coreHelper */
+$coreHelper = $this->helper(CoreHelper::class);
+/** @var DataHelper $dataHelper */
+$dataHelper = $this->helper(DataHelper::class);
+
+/** @var HeroiconsOutline $heroiconsOutline */
+$heroiconsOutline = $viewModels->require(HeroiconsOutline::class);
+
+/** @var BlogFullPageCacheTags $cacheTags */
+$cacheTags = $viewModels->require(BlogFullPageCacheTags::class);
+
+$uid = 'blog-' . time() . uniqid();
+$commentType = $dataHelper->getCommentType();
+$collection = $block->getCollection();
+$count = $collection->count();
+$showAuthor = $block->getShowAuthor();
+$showDate = $block->getShowDate();
+$showImage = $block->getShowImage();
+$showCategory = $block->getShowCategory();
+$showComment = $block->getShowComment();
+$showView = $block->getShowView();
+
+$imageWidth = 800;
+$imageHeight = 450;
+?>
+<?php if ($count) { ?>
+    <div class="blog-post-list">
+        <div class="blog-post-listing blog-post-listing2">
+            <?php /** @var PostInterface $post */ ?>
+            <?php foreach ($collection as $post) { ?>
+                <?php $cacheTags->register($post); ?>
+                <div
+                    class="blog-post-box blog-post-type-<?= $escaper->escapeHtmlAttr($post->getType()) ?> border-b border-container last:border-b-0 mb-4 last:mb-0"
+                >
+                    <div class="blog-post-box-inner">
+                        <?php $author = $post->getAuthor() ?>
+                        <?php if ($showImage && ($imageUrl = $post->getImageUrl($imageWidth, $imageHeight))) { ?>
+                            <div class="blog-post-image max-w-[100px] mb-2 mr-2 float-left">
+                                <a href="<?= $escaper->escapeHtmlAttr($escaper->escapeUrl($post->getUrl())) ?>"
+                                   title="<?= $escaper->escapeHtml($post->getTitle()) ?>"
+                                >
+                                    <img src="<?= $escaper->escapeHtmlAttr($escaper->escapeUrl($imageUrl)) ?>"
+                                         alt="<?= $escaper->escapeHtml($post->getTitle()) ?>"
+                                         loading="lazy"
+                                         width="<?= (int) $imageWidth ?>"
+                                         height="<?= (int) $imageHeight ?>"
+                                    />
+                                </a>
+                            </div>
+                        <?php } ?>
+                        <h3 class="blog-post-box-title title-font text-base mb-2 font-medium text-gray-900 hover:underline">
+                            <a href="<?= $escaper->escapeHtmlAttr($escaper->escapeUrl($post->getUrl())) ?>"
+                               title="<?= $escaper->escapeHtml($post->getTitle()) ?>">
+                                <?= $escaper->escapeHtml($post->getTitle()) ?>
+                            </a>
+                        </h3>
+                        <?php if ($showAuthor || $showDate || $showCategory || $showComment) { ?>
+                            <div class="blog-post-meta my-2 text-sm">
+                                <?php if ($showAuthor && ($author = $post->getAuthor())) { ?>
+                                    <span class="blog-post-meta-author inline-flex items-center text-gray-700 mr-2 gap-x-1">
+                                        <?= $heroiconsOutline->userCircleHtml('flex-shrink-0', 18, 18) ?>
+                                        <?php if ($author->getUrl()) { ?>
+                                        <a
+                                            href="<?= $escaper->escapeHtmlAttr($escaper->escapeUrl($author->getUrl())) ?>"
+                                            title="<?= $escaper->escapeHtmlAttr($author->getPublicName()) ?>"
+                                            class="hover:underline"
+                                        >
+                                        <?php } ?>
+                                        <?= $escaper->escapeHtml($author->getPublicName()) ?>
+                                        <?php if ($author->getUrl()) { ?>
+                                        </a>
+                                        <?php } ?>
+                                    </span>
+                                <?php } ?>
+                                <?php if ($showDate) { ?>
+                                    <span class="blog-post-meta-date inline-flex items-center text-gray-700 mr-2 gap-x-1">
+                                        <?= $heroiconsOutline->clockHtml('flex-shrink-0', 18, 18) ?>
+                                        <?= $escaper->escapeHtml($post->getCreatedAtFormatted(true)) ?>
+                                    </span>
+                                <?php } ?>
+                                <?php if ($showCategory) { ?>
+                                    <?php $categories = $post->getCategoryList() ?>
+                                    <?php if ($categories) { ?>
+                                        <span class="blog-post-meta-cats inline-flex items-center text-gray-700 mr-2 gap-x-1">
+                                        <?= $heroiconsOutline->folderHtml('', 16, 16) ?>
+                                        <span>
+                                            <?php foreach ($categories as $key => $category) { ?>
+                                            <a href="<?= $escaper->escapeHtmlAttr($escaper->escapeUrl($category->getUrl())) ?>"
+                                               data-id="<?= $escaper->escapeHtmlAttr($key) ?>"
+                                               class="hover:underline inline-block"
+                                            >
+                                                <?= $escaper->escapeHtml($category->getTitle()) ?>
+                                                </a><?= (isset($categories[$key + 1]) && $categories[$key + 1]) ? ', ' : '' ?>
+                                            <?php } ?>
+                                        </span>
+                                    </span>
+                                    <?php } ?>
+                                <?php } ?>
+                                <?php if ($showView) { ?>
+                                    <span class="blog-post-meta-views inline-flex items-center text-gray-700 mr-2 gap-x-1">
+                                        <?= $heroiconsOutline->eyeHtml('flex-shrink-0', 18, 18) ?>
+                                        <?= (int) $post->getTotalViews() ?>
+                                    </span>
+                                <?php } ?>
+                                <?php if ($showComment && $post->getAllowComment() && ($commentType !== Comment::TYPE_FACEBOOK)) { ?>
+                                    <?php $totalCommentCount = (int) $post->getTotalComments(); ?>
+                                    <span class="blog-post-meta-comments inline-flex text-gray-700 mr-2 gap-x-1">
+                                        <?= $heroiconsOutline->renderHtml('chat-alt-2', 'flex-shrink-0', 18, 18) ?>
+                                        <a href="<?= $escaper->escapeUrl($post->getMetaCommentUrl()) ?>"
+                                           class="hover:underline"
+                                        >
+                                            <?= (int) $post->getTotalComments() ?>
+                                        </a>
+                                    </span>
+                                <?php } ?>
+                            </div>
+                        <?php } ?>
+                    </div>
+                </div>
+            <?php } ?>
+        </div>
+    </div>
+<?php } ?>

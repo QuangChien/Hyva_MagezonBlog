@@ -1,0 +1,33 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+use Magezon\Blog\Model\Comment;
+use Magezon\Blog\Helper\Data as DataHelper;
+
+// phpcs:disable Magento2.Templates.ThisInTemplate.FoundHelper
+
+/** @var Escaper $escaper */
+
+/** @var DataHelper $dataHelper */
+$dataHelper = $this->helper(DataHelper::class);
+
+$type = $dataHelper->getCommentType();
+?>
+<?php if ($type == Comment::TYPE_DISQUS) { ?>
+    <?php
+    $disqusShortname = $dataHelper->getConfig('post_page/comments/disqus_shortname') ?: 'blog-m2-magezon-com';
+    $disqusBaseUrl = 'https://'. $disqusShortname . '.disqus.com/';
+    ?>
+    <script id="dsq-count-scr"
+            src="<?= $escaper->escapeUrl($disqusBaseUrl) ?>count.js"
+            async
+    ></script>
+<?php } ?>

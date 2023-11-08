@@ -1,0 +1,41 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+use Magezon\Blog\Block\Sidebar;
+use Magezon\Blog\Helper\Data as DataHelper;
+
+// phpcs:disable Magento2.Templates.ThisInTemplate.FoundHelper
+
+/** @var Sidebar $block */
+/** @var Escaper $escaper */
+
+/** @var DataHelper $dataHelper */
+$dataHelper = $this->helper(DataHelper::class);
+$blocks = ['search_form', 'categories', 'archives', 'tags', 'tabs', 'featured_posts'];
+$list = [];
+foreach ($blocks as $key) {
+    if ($dataHelper->getConfig('sidebar/' . $key . '/enabled')) {
+        $sortOrder = (int)$dataHelper->getConfig('sidebar/' . $key . '/sort_order');
+        $list[$key] = $sortOrder;
+    }
+}
+asort($list);
+
+if (!$list) {
+    return;
+}
+?>
+<h2 class="sr-only">
+    <?= $escaper->escapeHtml(__('Sidebar')) ?>
+</h2>
+<?php foreach (array_keys($list) as $key) { ?>
+    <?= $block->getChildHtml($key) ?>
+<?php } ?>

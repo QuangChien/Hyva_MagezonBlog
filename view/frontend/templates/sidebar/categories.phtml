@@ -1,0 +1,107 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\MagezonBlog\ViewModel\BlogFullPageCacheTags;
+use Hyva\Theme\Model\ViewModelRegistry;
+use Magento\Framework\Escaper;
+use Magezon\Blog\Block\Sidebar\Categories;
+use Magezon\Blog\Helper\Data as DataHelper;
+use Magezon\Blog\Model\Category;
+
+// phpcs:disable Magento2.Templates.ThisInTemplate.FoundHelper
+// phpcs:disable Magento2.Files.LineLength, Generic.Files.LineLength
+
+/** @var Categories $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+/** @var BlogFullPageCacheTags $cacheTags */
+$cacheTags = $viewModels->require(BlogFullPageCacheTags::class);
+
+/** @var DataHelper $dataHelper */
+$dataHelper = $this->helper(DataHelper::class);
+
+$title = $dataHelper->getConfig('sidebar/categories/title');
+$html = $block->getCategoriesHtml();
+?>
+<?php if ($html) { ?>
+    <script>
+        function initBlogCategories() {
+            return {
+                open: false,
+                init() {
+                    Array.from(this.$el.querySelectorAll('a')).filter(link => {
+                        return link.href === window.location.href.split('?')[0];
+                    }).map(item => {
+                        item.classList.add('underline');
+                        this.open = true;
+                    });
+                }
+            }
+        }
+    </script>
+    <div class="blog-block blog-categories mb-6">
+        <?php if ($title) { ?>
+            <div class="blog-block-title">
+                <h3 class="title-font sm:text-xl text-lg mb-2 font-bold text-gray-900">
+                    <?= $escaper->escapeHtml($title) ?>
+                </h3>
+            </div>
+        <?php } ?>
+        <div class="blog-block-content card">
+            <ul>
+                <?php /** @var Category $category */ ?>
+                <?php foreach ($block->getCategories() as $category): ?>
+                <?php $cacheTags->register($category); ?>
+                    <?php $childCategories = $category->getChildren() ?>
+                    <li class="leading-loose relative mb-2"
+                        x-data="initBlogCategories()"
+                        x-init="init()"
+                    >
+                        <a href="<?= $escaper->escapeHtmlAttr($escaper->escapeUrl($category->getUrl())) ?>"
+                           class="hover:underline"
+                        >
+                            <?= $escaper->escapeHtml($category->getTitle()) ?>
+                            <?php if ($block->showPostCount()): ?>
+                                (<?= (int) $category->getPostCount() ?>)
+                            <?php endif; ?>
+                        </a>
+                        <?php if ($childCategories): ?>
+                            <button
+                                @click="open=!open"
+                                class="font-bold text-lg absolute top-0 right-0 flex w-8 h-8 border rounded
+                                bg-container-lighter border-container hover:bg-container hover:border-container justify-center"
+                                x-text="open ? '-' : '+'"
+                                title="Toggle child categories"
+                            >+
+                            </button>
+                        <?php endif; ?>
+                        <?php if ($childCategories): ?>
+                            <ul class="ml-4" x-cloak x-show="open">
+                                <?php foreach ($childCategories as $childCategory): ?>
+                                    <?php $cacheTags->register($childCategory); ?>
+                                    <li class="leading-loose">
+                                        <a href="<?= $escaper->escapeHtmlAttr($escaper->escapeUrl($childCategory->getUrl())) ?>"
+                                           class="hover:underline"
+                                        >
+                                            <?= $escaper->escapeHtml($childCategory->getTitle()) ?>
+                                            <?php if ($block->showPostCount()): ?>
+                                                (<?= (int) $childCategory->getPostCount() ?>)
+                                            <?php endif; ?>
+                                        </a>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        <?php endif; ?>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+    </div>
+<?php } ?>

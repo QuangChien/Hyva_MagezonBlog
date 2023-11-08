@@ -1,0 +1,44 @@
+<?xml version="1.0" ?>
+<!--
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Hyva\CompatModuleFallback\Model\CompatModuleRegistry">
+        <arguments>
+            <argument name="compatModules" xsi:type="array">
+                <item name="hyva-magento2-magezon-blog" xsi:type="array">
+                    <item name="original_module" xsi:type="string">Magezon_Blog</item>
+                    <item name="compat_module" xsi:type="string">Hyva_MagezonBlog</item>
+                </item>
+            </argument>
+        </arguments>
+    </type>
+
+    <preference for="Magezon\Blog\Block\Post\Comments" type="Hyva\MagezonBlog\Block\Post\Comments"/>
+
+    <type name="Hyva\Theme\Service\Navigation">
+        <plugin name="hyva_magezonblog_add_blog_categories_to_menu" type="Hyva\MagezonBlog\Plugin\HyvaNavigationService"/>
+    </type>
+
+    <type name="Magezon\Blog\Controller\Post\View">
+        <plugin name="fix_entity_specific_handle_for_esi" type="Hyva\MagezonBlog\Plugin\FixPostViewControllerEntitySpecificHandles"/>
+    </type>
+
+    <type name="Magezon\Blog\Controller\Category\View">
+        <plugin name="fix_entity_specific_handle_for_esi" type="Hyva\MagezonBlog\Plugin\FixCategoryViewControllerEntitySpecificHandles"/>
+    </type>
+
+    <type name="Magezon\Blog\Controller\Author\View">
+        <plugin name="fix_entity_specific_handle_for_esi" type="Hyva\MagezonBlog\Plugin\FixAuthorViewControllerEntitySpecificHandles"/>
+    </type>
+
+    <type name="Magezon\Blog\Controller\Comment\Post">
+        <plugin name="change_value_comment_post" type="Hyva\MagezonBlog\Plugin\ChangeValueExecute"/>
+    </type>
+</config>

@@ -1,0 +1,39 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+use Magezon\Blog\Block\Post\RelatedPosts;
+use Magezon\Blog\Helper\Data as DataHelper;
+
+// phpcs:disable Magento2.Templates.ThisInTemplate.FoundHelper
+
+/** @var RelatedPosts $block */
+/** @var Escaper $escaper */
+
+/** @var DataHelper $dataHelper */
+$dataHelper = $this->helper(DataHelper::class);
+
+$title = $dataHelper->getConfig('post_page/related_posts/title');
+?>
+<?php if ($html = $block->getPostListHtml()) { ?>
+    <div class="blog-block blog-post-relatedposts my-2">
+        <?php if ($title) { ?>
+            <div class="blog-block-1title">
+                <h3 class="title-font sm:text-xl text-lg mb-1 text-gray-900 font-bold">
+                    <?= $escaper->escapeHtml($title) ?>
+                </h3>
+            </div>
+        <?php } ?>
+<!--        <div class="blog-block-content grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">-->
+        <div class="blog-block-content">
+            <?= /** @noEscape */ $html ?>
+        </div>
+    </div>
+<?php } ?>

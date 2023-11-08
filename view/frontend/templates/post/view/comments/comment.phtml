@@ -1,0 +1,81 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\MagezonBlog\Block\Post\Comments;
+use Magento\Framework\Escaper;
+use Magezon\Blog\Model\Comment as CommentModel;
+
+/** @var Comments $block */
+/** @var Escaper $escaper */
+
+/** @var CommentModel $comment */
+$comment = $block->getData('comment');
+$avatarSize = 65;
+$authorEmail = $comment->getAuthorEmail();
+
+$gravatarUrl = "https://www.gravatar.com/avatar/"
+    // phpcs:ignore Magento2.Security.InsecureFunction
+    . md5(strtolower(trim($authorEmail)))
+    . "?d=identicon&s="
+    . $avatarSize;
+?>
+<div id="comment-<?= $escaper->escapeHtmlAttr($comment->getId()) ?>" class="mt-2 mb-4">
+    <div class="flex">
+        <div class="flex-shrink-0 mr-3 hidden lg:block">
+            <img class="mt-2 rounded-full w-8 h-8 sm:w-10 sm:h-10"
+                 src="<?= $escaper->escapeHtmlAttr($escaper->escapeUrl($gravatarUrl)) ?>"
+                 alt="<?= $escaper->escapeHtmlAttr($comment->getAuthor()) ?>"
+                 loading="lazy"
+                 width="65"
+                 height="65"
+            />
+        </div>
+        <div class="flex-1 border rounded-lg p-4 md:pl-6 leading-relaxed">
+            <img class="rounded-full w-8 h-8 sm:w-10 sm:h-10 lg:hidden inline-flex mr-3"
+                 src="<?= $escaper->escapeHtmlAttr($escaper->escapeUrl($gravatarUrl)) ?>"
+                 alt="<?= $escaper->escapeHtmlAttr($comment->getAuthor()) ?>"
+                 loading="lazy"
+                 width="65"
+                 height="65"
+            />
+            <span class="font-semibold text-md">
+                <?= $escaper->escapeHtml($comment->getAuthor()) ?>
+            </span>
+            <a href="<?= $escaper->escapeHtmlAttr($escaper->escapeUrl($comment->getUrl())) ?>"
+               class="text-xs text-gray-500"
+            >
+                <?= $escaper->escapeHtml($comment->getCreatedAtFormatted()) ?>
+            </a>
+            <p class="text-base my-2">
+                <?= $escaper->escapeHtml($block->stripTags(nl2br($comment->getContent()))) ?>
+            </p>
+            <p class="text-right">
+                <a href="#"
+                   class="blog-comment-reply-link text-xs font-semibold bg-container-darker inline-block py-2 px-4"
+                   x-data=""
+                   @click.prevent="$dispatch('reply-to-comment',{id: <?= (int) $comment->getId() ?> })"
+                >
+                    <?= $escaper->escapeHtml(__('Reply')) ?>
+                </a>
+            </p>
+
+            <div class="reply-comment-placeholder" data-post-id="<?= (int) $comment->getId() ?>"></div>
+
+            <?php if ($children = $comment->getChildren()): ?>
+                <h4 class="my-5 uppercase tracking-wide text-gray-500 font-bold text-sm">
+                    <?= $escaper->escapeHtml(__('Replies')) ?>
+                </h4>
+                <?php foreach ($children as $child): ?>
+                    <?= $block->getCommentHtml($child); ?>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<widgets xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Widget:etc/widget.xsd">
+    <widget id="blog_post_list">
+        <parameters>
+            <parameter name="custom_class" xsi:type="text">
+                <description translate="true"><![CDATA[<i>This option has no effect in Hyvä Themes based storefronts</i>]]></description>
+            </parameter>
+            <parameter name="disable_box_shadow" xsi:type="select">
+                <description translate="true"><![CDATA[<i>This option has no effect in Hyvä Themes based storefronts</i>]]></description>
+            </parameter>
+            <parameter name="disable_border" xsi:type="select">
+                <description translate="true"><![CDATA[<i>This option has no effect in Hyvä Themes based storefronts</i>]]></description>
+            </parameter>
+            <parameter name="owlcarousel_settings" xsi:type="conditions"
+                       class="Magezon\Core\Block\Adminhtml\Widget\Field\Heading">
+                <label translate="true"><![CDATA[OwlCarousel Settings <i style='color: #ff3333'>(This options below has no effect in Hyvä Themes based storefronts)</i>]]></label>
+            </parameter>
+        </parameters>
+    </widget>
+</widgets>

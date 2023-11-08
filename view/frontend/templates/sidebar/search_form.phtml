@@ -1,0 +1,60 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+use Magezon\Blog\Block\Sidebar\SearchForm;
+use Magezon\Blog\Helper\Data as DataHelper;
+
+// phpcs:disable Magento2.Templates.ThisInTemplate.FoundHelper
+// phpcs:disable Magento2.Files.LineLength, Generic.Files.LineLength
+
+/** @var SearchForm $block */
+/** @var Escaper $escaper */
+
+/** @var DataHelper $dataHelper */
+$dataHelper  = $this->helper(DataHelper::class);
+$title       = $dataHelper->getConfig('sidebar/search_form/title');
+$searchRoute = $dataHelper->getSearchRoute();
+?>
+<?php if ($searchRoute) { ?>
+    <div class="blog-block blog-searchform mb-6">
+        <?php if ($title) { ?>
+            <div class="blog-block-title">
+                <h3 class="title-font sm:text-xl text-lg mb-2 font-bold text-gray-900">
+                    <?= $escaper->escapeHtml($title) ?>
+                </h3>
+            </div>
+        <?php } ?>
+        <div class="blog-block-content card">
+            <form action="<?= $escaper->escapeHtmlAttr($escaper->escapeUrl($block->getUrl('blog/' . $searchRoute . '/result'))) ?>"
+                  method="GET"
+                  class="flex flex-col gap-y-2"
+            >
+                <label class="label sr-only" for="blog-search" data-role="blogsearch-label">
+                    <span><?= $escaper->escapeHtml($title) ?></span>
+                </label>
+                <input id="blog-search"
+                       class="form-input w-full"
+                       type="text"
+                       name="s"
+                       placeholder="<?= $escaper->escapeHtmlAttr(__('Search posts here...')) ?>"
+                       value="<?= $escaper->escapeHtmlAttr($block->getRequest()->getParam('s')) ?>"
+                       required
+                />
+                <button
+                    type="submit"
+                    class="btn btn-primary w-full justify-center"
+                >
+                    <?= $escaper->escapeHtml(__('Search')) ?>
+                </button>
+            </form>
+        </div>
+    </div>
+<?php } ?>
